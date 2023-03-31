@@ -1,1 +1,2 @@
-airflow/logs/scheduler/latest
+airflow/logs
+postgres-data

@@ -32,21 +32,17 @@ services:
             - ./airflow/dags:/usr/local/airflow/dags
             - ./airflow/plugins:/usr/local/airflow/plugins
             - ./airflow/logs:/usr/local/airflow/logs
-        command: airflow webserver
+        command: bash -c "airflow db init && airflow users create \
+            --username airflow \
+            --password airflow \
+            --firstname Airflow \
+            --lastname Admin \
+            --role Admin \
+            --email admin@example.com && airflow webserver"
         healthcheck:
             test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
             interval: 30s
             timeout: 30s
             retries: 3
-    scheduler:
-        image: apache/airflow:2.5.2
-        depends_on:
-            - postgres
-        command: ["scheduler"]
-        environment:
-            - LOAD_EX=n
-            - EXECUTOR=LocalExecutor
-        volumes:
-            - ./airflow/dags:/opt/airflow/dags
-            - ./airflow/logs:/opt/airflow/logs
-            - ./airflow/plugins:/opt/airflow/plugins
+volumes:
+  postgres-data:

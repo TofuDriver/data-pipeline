@@ -12,10 +12,7 @@ ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 ENV PYTHONPATH=${PYTHONPATH}:${AIRFLOW_HOME}
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
-ENV AIRFLOW__WEBSERVER__AUTHENTICATE=True
-ENV AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
-ENV AIRFLOW__WEBSERVER__USERNAME=airflow
-ENV AIRFLOW__WEBSERVER__PASSWORD=airflow
+
 
 # Update and install dependencies
 RUN set -ex \
@@ -60,15 +57,6 @@ RUN pip install --upgrade pip \
         /usr/share/doc \
         /usr/share/doc-base
 
-# Initialize Airflow database
-RUN airflow db init \
-    && airflow users create \
-        --username $AIRFLOW__WEBSERVER__USERNAME \
-        --password $AIRFLOW__WEBSERVER__PASSWORD \
-        --firstname Airflow \
-        --lastname Admin \
-        --role Admin \
-        --email admin@example.com
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
