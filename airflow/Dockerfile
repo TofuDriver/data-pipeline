@@ -5,11 +5,12 @@ FROM python:3.9-slim-buster
 ARG AIRFLOW_VERSION=2.5.2
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS="postgres"
-ARG PYTHON_DEPS="psycopg2 requests pandas pytz"
+ARG PYTHON_DEPS="psycopg2 requests pandas pytz chart_studio psycopg2-binary"
 
 # Environment variables
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 ENV PYTHONPATH=${PYTHONPATH}:${AIRFLOW_HOME}
+ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
@@ -40,12 +41,14 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow
-        
+
 # Install Airflow with extras and clean temporary packages and files
 RUN pip install --upgrade pip \
     && pip install apache-airflow[${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
+    && pip install apache-airflow[postgres] \
     && pip install -U pip setuptools wheel \
+    && pip install chart_studio psycopg2 \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
@@ -56,7 +59,6 @@ RUN pip install --upgrade pip \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
-
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
